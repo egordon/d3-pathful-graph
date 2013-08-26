@@ -35,9 +35,23 @@ path.link.hidden {
   stroke-width: 0;
 }
 
+/**
+ General circle color scheme
+ - green: #27a549
+ - orange: #ff8804
+ - grey: #bcbbbb
+ */
+
 circle.node {
   stroke-width: 1.5px;
+  stroke: #000 !important;
   cursor: pointer;
+  /* r: 50; */
+  fill: white;
+}
+
+circle.node.selected {
+    fill: #ff8804;
 }
 
 circle.node.reflexive {
@@ -53,4 +67,8 @@ text {
 text.id {
   text-anchor: middle;
   font-weight: bold;
+}
+
+defs {
+  fill: #000;
 }

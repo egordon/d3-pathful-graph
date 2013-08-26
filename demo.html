@@ -4,14 +4,13 @@
     <meta charset="utf-8">
     <title>Directed Graph Editor</title>
     <link rel="stylesheet" href="app.css">
-
     <!-- jQuery -->
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
 
     <!-- d3 -->
-    <script type="text/javascript" src="http://d3js.org/d3.v2.js"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 
-    <script type="text/javascript" src="http://blog.accursedware.com/jquery-svgpan/jquery-svgpan.js"></script>
+    <script type="text/javascript" src="jquery-svgpan.js"></script>
 
     <script type="text/javascript" src="pathful_graph.js"></script>
 
@@ -34,6 +33,14 @@
     d$3.OnLinkUnselect = function(link) {
       document.getElementById("header").innerHTML = "Link Unselected...";
     }
+    // Called when zoomed in
+    d$3.OnZoom = function() {
+      document.getElementById("header").innerHTML = "Zoomed In!";
+    }
+    // Called when zoomed out
+    d$3.OnZoomOut = function() {
+      document.getElementById("header").innerHTML = "Zoomed Out!";
+    }
 
 
     </script>
@@ -51,6 +58,8 @@
     <input type="button" value="Toggle Link 0 -> 1!" onclick="d$3.SelectLink(0, 1)" />
     <input type="button" value="Disable Manual Select" onclick="d$3.ToggleManualSelect(false)" />
     <input type="button" value="Enable Manual Select" onclick="d$3.ToggleManualSelect(true)" />
+    <input type="button" value="Zoom Node 1" onclick="d$3.ZoomOnNode(1)" />
+    <input type="button" value="Zoom Node 2" onclick="d$3.ZoomOnNode(2)" />
 
     <h1 id="header">Initialize the Graph!</h1>
 </html>

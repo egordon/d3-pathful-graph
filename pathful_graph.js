@@ -1,22 +1,53 @@
 window.d$3 = {};
 
+var MID_X = 500, START_X = 100, END_Y = 200
+
+
+// initial import data from guranteed rate
+GRAPH_DATA = 
+{"lastNodeId": 10, "nodes": [
+    {"label": "https://www.guaranteedrate.com/assumptions", "id": 0, "reflexive": true}, 
+    {"label": "https://www.guaranteedrate.com/home-loans", "id": 1, "reflexive": true, "fixed": true, "x":500, "y" : 10}, 
+    {"label": "https://www.guaranteedrate.com/buying-home", "id": 2, "reflexive": true}, {"label": "https://www.guaranteedrate.com/", "id": 3, "reflexive": true}, {"label": "https://www.guaranteedrate.com/refinance", "id": 4, "reflexive": true}, {"label": "https://www.guaranteedrate.com/mortgage-calculators", "id": 5, "reflexive": true}, {"label": "exit", "id": 6, "reflexive": true}, {"label": "http://www.guaranteedrate.com/", "id": 7, "reflexive": true}, {"label": "https://www.guaranteedrate.com/home-loans/*-year-fixed-rate-mortgage", "id": 8, "reflexive": true}, {"label": "https://www.guaranteedrate.com/loanoptions", "id": 9, "reflexive": true}, 
+    {"label": "https://www.guaranteedrate.com/mortgage-rates", "id": 10, "reflexive": true, "fixed" : true, "x":500, "y": 800}
+    ]};
+
+NODE_DATA = GRAPH_DATA['nodes'];
+EDGE_DATA = 
+    [{"source": NODE_DATA[0], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[0], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[1], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[2], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[2], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[3], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[3], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[4], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[5], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[7], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[7], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[8], "right": true, "target": NODE_DATA[9], "left": false}, {"source": NODE_DATA[8], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[9], "right": true, "target": NODE_DATA[0], "left": false}, {"source": NODE_DATA[9], "right": true, "target": NODE_DATA[3], "left": false}, {"source": NODE_DATA[9], "right": true, "target": NODE_DATA[6], "left": false}, {"source": NODE_DATA[9], "right": true, "target": NODE_DATA[7], "left": false}, {"source": NODE_DATA[9], "right": true, "target": NODE_DATA[10], "left": false}, {"source": NODE_DATA[10], "right": true, "target": NODE_DATA[3], "left": false}, {"source": NODE_DATA[10], "right": true, "target": NODE_DATA[9], "left": false}];
+
+
+
 $(document).ready(function() {
+
+  "use strict";
 
   var initialized = false;
   var manualSelect = true;
 
-  d$3.initialize = function(width, height) {
+  /**
+    target: css div container for the target
+    */
+  d$3.initialize = function(width, height, target, options) {
       if(initialized) return;
       else initialized = true;
+
+      target = target || 'body';
 
       window.svgWidth = width;
       window.svgHeight = height;
 
-      var doTick = true;
-      // set up SVG for D3
-      var colors = d3.scale.category10();
+      options = options || {};
 
-      var vis = d3.select('body')
+      // choose if we allow anmiation
+      var doTick = !options['animation'];
+      var animation_duration = options['animation_duration'];
+
+      // set up SVG for D3
+      // unless: NO_COLOR 
+      //var colors = d3.scale.category10();
+
+      var vis = d3.select(target)
 
         .append("svg")
           .attr("width", width)
@@ -44,16 +75,9 @@ $(document).ready(function() {
       //  - nodes are known by 'id', not by index in array.
       //  - reflexive edges are indicated on the node (as a bold black circle).
       //  - links are always source < target; edge directions are set by 'left' and 'right'.
-      var nodes = [
-          {id: 0, reflexive: false, fixed: true, x: 300, y: 300}, // Fix Node to a position in SVG, (0,0) is top left
-          {id: 1, reflexive: true},
-          {id: 2, reflexive: false, fixed: true, x: 600, y: 300}
-        ],
-        lastNodeId = 2,
-        links = [
-          {source: nodes[0], target: nodes[1], left: false, right: true },
-          {source: nodes[1], target: nodes[2], left: false, right: true }
-        ];
+      var nodes = GRAPH_DATA['nodes'],
+        lastNodeId = GRAPH_DATA['lastNodeId'],
+        links = EDGE_DATA;
 
       // init D3 force layout
       var force = d3.layout.force()
@@ -73,8 +97,7 @@ $(document).ready(function() {
           .attr('markerHeight', 3)
           .attr('orient', 'auto')
         .append('svg:path')
-          .attr('d', 'M0,-5L10,0L0,5')
-          .attr('fill', '#000');
+          .attr('d', 'M0,-5L10,0L0,5');
 
       svg.append('svg:defs').append('svg:marker')
           .attr('id', 'start-arrow')
@@ -84,8 +107,7 @@ $(document).ready(function() {
           .attr('markerHeight', 3)
           .attr('orient', 'auto')
         .append('svg:path')
-          .attr('d', 'M10,-5L0,0L10,5')
-          .attr('fill', '#000');
+          .attr('d', 'M10,-5L0,0L10,5');
 
       // line displayed when dragging new nodes
       /*
@@ -177,7 +199,8 @@ $(document).ready(function() {
 
         // update existing nodes (reflexive & selected visual states)
         circle.selectAll('circle')
-          .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+          // unless: NO_COLOR 
+          //.style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
           .classed('reflexive', function(d) { return d.reflexive; });
 
         // add new nodes
@@ -185,9 +208,11 @@ $(document).ready(function() {
 
         g.append('svg:circle')
           .attr('class', 'node')
-          .attr('r', 12)
-          .style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
-          .style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
+          .attr('r', 20)
+          // unless: NO_COLOR 
+          //.style('fill', function(d) { return (d === selected_node) ? d3.rgb(colors(d.id)).brighter().toString() : colors(d.id); })
+          // unless: NO_COLOR 
+          //.style('stroke', function(d) { return d3.rgb(colors(d.id)).darker().toString(); })
           .classed('reflexive', function(d) { return d.reflexive; })
           .on('mousedown', function(d) {
             if(d3.event.altKey || !manualSelect) return;
@@ -227,8 +252,24 @@ $(document).ready(function() {
         // set the graph in motion... then stop it...
         if(doTick) {
           force.start();
-          for(var i=0; i<100; i++) force.tick();
-          force.stop();
+
+          if (!animation_duration) {
+              for(var i=0; i<100; i++) force.tick();
+              force.stop();
+          } else {
+              var t0 = (new Date().getTime());
+              var intervalTimer = setInterval(function () {
+                  var t1 = (new Date().getTime());
+                  force.tick();
+                  
+                  if ((t1-t0) > animation_duration) {
+                      clearTimeout(intervalTimer);
+                      force.stop();
+                  }
+
+              }, 200);
+
+          }
           doTick = false;
         } else {
           force.tick();
@@ -351,7 +392,45 @@ $(document).ready(function() {
       restart();
       $('svg').svgPan('viewport');
 
+      /////////////// Utility Functions //////////////////
+
+      function currentTransform(startMatrix) {
+        if(startMatrix.length != 2) return startMatrix;
+        else {
+          var transMatrix = svg[0][0].attributes.transform
+          if(!transMatrix) return startMatrix;
+          transMatrix = transMatrix.value.match(/[-\d\.]+/g);
+          for(var i=0; i<transMatrix.length; i++) {
+            transMatrix[i] = parseFloat(transMatrix[i]);
+          }
+          var retMatrix = Array(2);
+          retMatrix[0] = (transMatrix[0] * startMatrix[0]) + (transMatrix[2] * startMatrix[1]) + transMatrix[4];
+          retMatrix[1] = (transMatrix[1] * startMatrix[0]) + (transMatrix[3] * startMatrix[1]) + transMatrix[5];
+          return retMatrix;
+        }
+      }
+
+      d$3.ZoomHandler = function(zoom) {
+        if(zoom < d$3.zoomSensitivity) {
+          if(!d$3.zoomedIn && typeof(d$3.OnZoom) != "undefined") d$3.OnZoom();
+          d$3.zoomedIn = true;
+        }
+        if(zoom >= d$3.zoomSensitivity) {
+          if(d$3.zoomedIn && typeof(d$3.OnZoomOut) != "undefined") d$3.OnZoomOut();
+          d$3.zoomedIn = false;
+        }
+      }
+                var setCTM = function (matrix) {
+                    var s = "matrix(" + matrix.a + "," + matrix.b + "," + matrix.c + "," + matrix.d + "," + matrix.e + "," + matrix.f + ")";
+
+                    svg[0][0].setAttribute("transform", s);
+                }
+
       /////////////// BASIC API STARTS HERE! //////////////////
+
+      d$3.SetOptions = function (options) {
+          animation_duration = options['animation_duration'];
+      };
       
       d$3.AddNode = function(nodeID, isFixed) {
         // insert new node at point
@@ -459,20 +538,33 @@ $(document).ready(function() {
       d$3.SelectNode = function(nodeID) {
         var selectNode = $.grep(nodes, function(e){ return e.id == nodeID; });
         if(selectNode.length > 0) {
-          d = selectNode[0];
+          var d = selectNode[0];
           // select node
           mousedown_node = d;
           if(mousedown_node === selected_node) selected_node = null;
           else selected_node = mousedown_node;
           selected_link = null;
 
+          var circle_selected = d3.selectAll('circle').data([selected_node])[0][0];
+
           // Call User-defined click event if exists
-          if(typeof(d$3.OnNodeSelect) != "undefined" && selected_node != null) d$3.OnNodeSelect(selected_node);
-          if(typeof(d$3.OnNodeUnselect) != "undefined" && selected_node == null) d$3.OnNodeUnselect(mousedown_node);
+          if(typeof(d$3.OnNodeSelect) != "undefined" && selected_node != null) {
+            d$3.OnNodeSelect(selected_node, circle_selected);
+          }
+          if(typeof(d$3.OnNodeUnselect) != "undefined" && selected_node == null) {
+            d$3.OnNodeUnselect(mousedown_node, circle_selected);
+          }
 
           restart();
           return true;
         } else return false;
+      }
+
+      d$3.GetNodeObject = function(nodeID) {
+        var selectNode = $.grep(nodes, function(e){ return e.id == nodeID; });
+        if(selectNode.length > 0) {
+          return selectNode[0];
+        } else return undefined;
       }
 
       d$3.GetSelectedObject = function() {
@@ -486,7 +578,101 @@ $(document).ready(function() {
         return manualSelect;
       }
 
+      d$3.ShowNodeInfo = function () {
+          circle.append("svg:text")
+                  .attr("class", "nodedetail")
+                  .attr("dx", 15) //function(d) { debugger; return d.x; })
+                  .attr("dy", 10) //function(d) { return d.y; })
+                  .text(function(d) { return d.label; })
+                  ;
+      };
+
+      d$3.HideNodeInfo = function () {
+          $('.nodedetail').remove();
+      };
+      
+      d$3.ShowEdgeInfo = function (info) {
+          //http://stackoverflow.com/questions/8663844/add-text-label-onto-links-in-d3-force-directed-graph
+          path.each(function (d) {
+              svg.append('svg:text')
+                  .attr("class", "edgedetail")
+                  .attr("dx", (d.source.x+d.target.x) / 2)
+                  .attr("dy", (d.source.y+d.target.y) / 2)
+                  .text(info) //function(d) { return d.label; })
+              ;
+          });
+      };
+      d$3.HideEdgeInfo = function (nodeID1, nodeID2) {
+          $('.edgedetail').remove();
+      };
+      d$3.Zoom = function(x, y, delta, options) {
+        var evt = document.createEvent("MouseEvents");
+        evt.initEvent('mousewheel', true, true);
+        evt.wheelDelta = delta * 360.0;
+        evt.posX = x;
+        evt.posY = y;
+        if(options['animated']) {
+          var counter = 1;
+          evt.wheelDelta = evt.wheelDelta / 100.0;
+          var interval  =setInterval(function() {
+            if(counter >= 100) clearInterval(interval);
+            else {
+              document.dispatchEvent(evt);
+              counter++;
+            }
+          }, 1)
+        }
+        document.dispatchEvent(evt);
+      }
+
+      d$3.Pan = function(x, y) {
+        setCTM(svg[0][0].getCTM().translate(x, y));
+      }
+
+      d$3.ZoomOnNode = function(nodeID) {
+        // Get Center of SVG
+        var centerPoint = new Object();
+        centerPoint.x = svgWidth/2.0
+        centerPoint.y = svgHeight/ 2.0;
+
+        var panArr = Array(2);
+        var panSpeed = 0.1;
+
+        var interval = setInterval(function() {
+          
+          // Get Node's Position
+          var posArr = d$3.GetNodePosition(nodeID);
+          var distance = Math.sqrt(Math.pow(posArr[0] - centerPoint.x, 2) + Math.pow(posArr[1] - centerPoint.y, 2));
+          if(d$3.zoomedIn && distance < 10.0) clearInterval(interval);
+          
+          // Zoom In
+          if(!d$3.zoomedIn) {
+            d$3.Zoom(posArr[0], posArr[1], 0.05, {'animated': false});
+            panSpeed = 0.1;
+          } else panSpeed = 1;
+
+          // Move to correct position
+          if(Math.abs(posArr[0] - centerPoint.x) < (3*panSpeed)) panArr[0] = 0;
+          else if(posArr[0] < centerPoint.x) panArr[0] = panSpeed;
+          else if(posArr[0] > centerPoint.x) panArr[0] = -panSpeed;
+          if(Math.abs(posArr[1] - centerPoint.y) < (3*panSpeed)) panArr[1] = 0;
+          else if(posArr[1] < centerPoint.y) panArr[1] = panSpeed;
+          else if(posArr[1] > centerPoint.y) panArr[1] = -panSpeed;
+          d$3.Pan(panArr[0], panArr[1]);
+        },1);
+      }
+
+      d$3.GetNodePosition = function(nodeID) {
+
+        var posArr = Array(2);
+        posArr[0] = parseFloat(circle[0][nodeID].attributes.transform.value.match(/[-\d\.]+/g)[0]);
+        posArr[1] = parseFloat(circle[0][nodeID].attributes.transform.value.match(/[-\d\.]+/g)[1]);
+        return currentTransform(posArr);
+      }
+
       ///////////////// Variables //////////////////
       d$3.direction = {left: 0, right: 1, both: 2};
+      d$3.zoomSensitivity = 0.2;
+      d$3.zoomedIn = false;
   }
 });

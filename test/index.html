@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <link rel="stylesheet" href="../app.css">
+		<!--[if lt IE 9]>
+		<script src="lib/aight.js"></script>
+		<![endif]-->
+		<script src="lib/mocha.js"></script>
+		<script src="lib/assert.js"></script>
+		<script src="lib/sinon.js"></script>
+		<script>
+			mocha.setup({
+				ui: 'bdd'
+			});
+		</script>
+		<link href="lib/mocha.css" rel="stylesheet"></link>
+        <title>Pathful graph test suite</title>
+        <!-- load library -->
+        <script type="text/javascript" src="../ext-lib/jquery.min.js"></script>
+        <script type="text/javascript" src="../ext-lib/d3.v2.js"></script>
+        <script src="../ext-lib/jquery-svgpan.js"></script>
+        
+	</head>
+	<body>
+		<div id="mocha"></div>
+		<div id="test"></div>
+        <div id="graph_container"></div>
+        
+        <!-- load script -->
+        <script src="../pathful_graph.js"></script>
+        <script src="tests/graph.js"></script>
+
+		<script>
+			mocha.run();
+        </script>
+	</body>
+</html>
